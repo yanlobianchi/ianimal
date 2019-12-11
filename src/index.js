@@ -71,7 +71,7 @@ async function predict(data) {
 	}
 
 	const innerHTML = `
-		<table class="responsive-table">
+		<table class="table-responsive">
 			<t-body>${tbody.join('')}</t-body>
 		</table>
 	`;
