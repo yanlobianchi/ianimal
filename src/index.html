@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, user-scalable=no" />
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/materialize/0.95.1/css/materialize.min.css" />
+		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+		<script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+		<script type="module" src="./index.js"></script>
+	</head>
+	<style>
+		body {
+			display: flex;
+			flex-direction: column;
+			align-self: center;
+			align-items: center;
+			justify-content: center;
+		}
+
+		#stop {
+			visibility: hidden;
+			position: static;
+		}
+
+		p {
+			margin-top: 0.1em;
+			margin-bottom: 0.1em;
+		}
+
+		button {
+			margin-top: 0.2em;
+			margin-bottom: 0.2em;
+		}
+
+		.row {
+			margin: 0.5em;
+			display: flex;
+			flex-direction: row;
+		}
+
+		em {
+			align-self: center;
+		}
+
+		.no-margin {
+			padding-top: 0;
+			padding-bottom: 0;
+			margin-top: 0;
+			margin-bottom: 0;
+			height: auto;
+		}
+
+		.input-image {
+			margin: 0 0.5em;
+		}
+	</style>
+	<body>
+		<h3>IAnimal</h3>
+		<h4>Reconheça animais!</h4>
+
+		<div id="webcam-container"></div>
+		<div id="label-container"></div>
+
+		<div class="row">
+			<input class="input-image" type="file" id="image" name="image" accept="image/*" />
+			<button type="button" id="stop" onclick="continuar()">Continuar</button>
+		</div>
+
+		<button type="button" class="start" onclick="predict(canvas)">Reconhecer</button>
+	</body>
+</html>
