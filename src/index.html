@@ -32,9 +32,10 @@
 		.row {
 			margin: 1em;
 			display: flex;
-			justify-content: space-between;
+			justify-content: center;
 			flex-direction: row;
 			flex-wrap: wrap;
+			align-self: center;
 		}
 
 		.no-margin {
@@ -54,7 +55,7 @@
 			margin: 0.5em;
 		}
 
-		.centered-vertical .row {
+		.centered-vertical {
 			align-self: center;
 			margin: auto 0.5em;
 		}
@@ -72,7 +73,7 @@
 		<input class="input-image" type="file" id="image" name="image" accept="image/*" />
 
 		<div class="row">
-			<div id="webcam-container" class="webcam-container">
+			<div id="webcam-container" class="webcam-container centered-vertical">
 				<button type="button" onclick="predict(canvas)">Reconhecer</button>
 			</div>
 			<div id="label-container" class="centered-vertical"></div>

@@ -59,6 +59,7 @@ async function predict(data) {
 	const div = document.createElement('div');
 	div.id = 'first';
 	div.classList.add('row');
+	div.classList.add('row');
 	const element = document.createElement('div');
 	element.classList.add('row');
 	element.innerHTML = `<h4 class="centered-vertical" style="font-size: 14pt"> ${prediction[0].className}</h4> 
