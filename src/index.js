@@ -3,8 +3,9 @@
 const URL = '/resources/';
 
 let model, webcam, labelContainer, webcamContainer, maxPredictions;
-let stop = false;
-
+const width = 300,
+	height = 300,
+	flip = true;
 // Load the image model and setup the webcam
 async function init() {
 	const modelURL = URL + 'model.json';
@@ -18,8 +19,7 @@ async function init() {
 	maxPredictions = model.getTotalClasses();
 
 	// Convenience function to setup a webcam
-	const flip = true; // whether to flip the webcam
-	webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
+	webcam = new tmImage.Webcam(width, height, flip); // width, height, flip
 	await webcam.setup(); // request access to the webcam
 	await webcam.play();
 	window.requestAnimationFrame(loop);
@@ -39,33 +39,42 @@ async function init() {
 window.onload = init();
 
 export async function loop() {
-	if (!stop) {
-		webcam.update(); // update the webcam frame
-		window.requestAnimationFrame(loop);
-	}
+	webcam.update(); // update the webcam frame
+	window.requestAnimationFrame(loop);
 }
 
 // run the webcam image through the image model
 async function predict(data) {
-	stop = true;
-	replaceImage(data);
+	// stop = true;
 	// predict can take in an image, video or canvas html element
 	let prediction = await model.predict(data);
 
 	prediction = prediction.sort((prev, current) => {
-		return prev.probability > current.probability ? -1 : (prev.probability < current.probability ? 1 : 0);
+		return prev.probability > current.probability ? -1 : prev.probability < current.probability ? 1 : 0;
 	});
 
-	labelContainer.childNodes[0].innerHTML = `<div class="row"> <h4> ${
-		prediction[0].className
-	}</h4> <em>(${prediction[0].probability.toFixed(2) * 100}%)</em> </div>`;
+	const first = document.getElementById('first');
+	first && first.remove();
+	
+	const div = document.createElement('div');
+	div.id = 'first';
+	div.classList.add('row');
+	const element = document.createElement('div');
+	element.classList.add('row');
+	element.innerHTML = `<h4 class="centered-vertical" style="font-size: 14pt"> ${prediction[0].className}</h4> 
+	<span class="centered-vertical centered-horizontal">(${prediction[0].probability.toFixed(2) * 100}%)</span>`;
+
+	div.appendChild(createCanvas(data, false));
+	div.appendChild(element);
+
+	labelContainer.childNodes[0].appendChild(div);
 
 	const tbody = [];
 	for (let i = 1; i < maxPredictions; i++) {
 		tbody.push(`
 			<tr class="no-margin">
 				<td class="no-margin">${prediction[i].className}</td>
-				<td class="no-margin">${prediction[i].probability.toFixed(2) * 100}%</td>
+				<td class="no-margin centered-horizontal">${prediction[i].probability.toFixed(2) * 100}%</td>
 			</tr>
 		`);
 	}
@@ -84,31 +93,46 @@ async function predict(data) {
 		window.speechSynthesis.speak(speech);
 	}
 
-	document.getElementById('stop').style.visibility = 'visible';
-	const startElements = document.getElementsByClassName('start');
-	for (let index = 0; index < startElements.length; index++) {
-		startElements[index].style.visibility = 'hidden';
-	}
 }
 
-function replaceImage(data) {
-	webcamContainer.removeChild(webcamContainer.childNodes[0]);
-	webcamContainer.appendChild(data);
+function createCanvas(data, flip = true) {
+	const canvas = document.createElement('canvas');
+	const ctx = canvas.getContext('2d');
+	canvas.width = width / 2;
+	canvas.height = height / 2;
+	const cropped = cropTo(data, width/2, flip)
+	ctx.drawImage(cropped, 0, 0, width / 2, height / 2);
+	return canvas;
 }
 
-export async function continuar() {
-	stop = false;
-	replaceImage(webcam.canvas);
-	await loop();
-	labelContainer.childNodes.forEach(element => {
-		element.innerHTML = '';
-	});
+export function cropTo(image, size, flipped = false, canvas = document.createElement('canvas')) {
+	// image image, bitmap, or canvas
+	let width = image.width;
+	let height = image.height;
 
-	document.getElementById('stop').style.visibility = 'hidden';
-	const startElements = document.getElementsByClassName('start');
-	for (let i = 0; i < startElements.length; i++) {
-		startElements[i].style.visibility = 'visible';
+	// if video element
+	if (image instanceof HTMLVideoElement) {
+		width = image.videoWidth;
+		height = image.videoHeight;
 	}
+
+	const min = Math.min(width, height);
+	const scale = size / min;
+	const scaledW = Math.ceil(width * scale);
+	const scaledH = Math.ceil(height * scale);
+	const dx = scaledW - size;
+	const dy = scaledH - size;
+	canvas.width = canvas.height = size;
+	const ctx = canvas.getContext('2d');
+	ctx.drawImage(image, ~~(dx / 2) * -1, ~~(dy / 2) * -1, scaledW, scaledH);
+
+	// canvas is already sized and cropped to center correctly
+	if (flipped) {
+		ctx.scale(-1, 1);
+		ctx.drawImage(canvas, size * -1, 0);
+	}
+
+	return canvas;
 }
 
 function handleImageUpload(event) {
@@ -116,10 +140,11 @@ function handleImageUpload(event) {
 	const reader = new FileReader();
 	reader.onload = (function(file) {
 		return function(e) {
-			const image = new Image(200, 200);
+			const image = new Image(width, height);
 			image.src = e.target.result;
-			image.crossOrigin
-			predict(image);
+			image.onload = function() {
+				predict(createCanvas(image));
+			}
 		};
 	})(image);
 	reader.readAsDataURL(image);
@@ -128,4 +153,3 @@ function handleImageUpload(event) {
 document.getElementById('image').addEventListener('change', handleImageUpload, false);
 
 window.predict = predict;
-window.continuar = continuar;

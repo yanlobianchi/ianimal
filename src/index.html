@@ -19,11 +19,6 @@
 			flex-wrap: wrap;
 		}
 
-		#stop {
-			visibility: hidden;
-			position: static;
-		}
-
 		p {
 			margin-top: 0.1em;
 			margin-bottom: 0.1em;
@@ -35,14 +30,11 @@
 		}
 
 		.row {
-			margin: 0.5em;
+			margin: 1em;
 			display: flex;
+			justify-content: space-between;
 			flex-direction: row;
 			flex-wrap: wrap;
-		}
-
-		em {
-			align-self: center;
 		}
 
 		.no-margin {
@@ -53,22 +45,37 @@
 			height: auto;
 		}
 
+		.centered-horizontal {
+			justify-content: center;
+			text-align: center;
+		}
+
 		.input-image {
-			margin: 0 0.5em;
+			margin: 0.5em;
+		}
+
+		.centered-vertical .row {
+			align-self: center;
+			margin: auto 0.5em;
+		}
+
+		.webcam-container {
+			display: flex;
+			flex-direction: column;
+			margin: 1em 0.5em;
 		}
 	</style>
 	<body>
 		<h3>IAnimal</h3>
-		<h4>Reconheça animais!</h4>
+		<h4 style="margin-top: 0">Reconheça animais!</h4>
 
-		<div id="webcam-container"></div>
-		<div id="label-container"></div>
+		<input class="input-image" type="file" id="image" name="image" accept="image/*" />
 
 		<div class="row">
-			<input class="input-image" type="file" id="image" name="image" accept="image/*" />
-			<button type="button" id="stop" onclick="continuar()">Continuar</button>
+			<div id="webcam-container" class="webcam-container">
+				<button type="button" onclick="predict(canvas)">Reconhecer</button>
+			</div>
+			<div id="label-container" class="centered-vertical"></div>
 		</div>
-
-		<button type="button" class="start" onclick="predict(canvas)">Reconhecer</button>
 	</body>
 </html>
